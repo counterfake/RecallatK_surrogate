@@ -7,7 +7,9 @@ from torchvision import transforms
 import scipy.io
 
 def give_dataloaders(dataset, opt):
-    if opt.dataset=='vehicle_id':
+    if opt.dataset=='all_in':
+        datasets = give_all_in_datasets(opt)
+    elif opt.dataset=='vehicle_id':
         datasets = give_VehicleID_datasets(opt)
     elif opt.dataset=='Inaturalist':
         datasets = give_inaturalist_datasets(opt)
@@ -57,6 +59,42 @@ def give_cars196_datasets(opt):
         val_dataset = BaseTripletDataset(test_image_dict, opt, is_validation=True)
         eval_dataset = BaseTripletDataset(train_image_dict, opt, is_validation=True)
         return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
+
+def give_all_in_datasets(opt):
+	train_image_dict, test_image_dict = {}, {}
+	train_data = open(os.path.join(opt.source_path, 'train.txt'), 'r').read().splitlines()[1:]
+	test_data = open(os.path.join(opt.source_path, 'test.txt'), 'r').read().splitlines()[1:]
+	for entry in train_data:
+		info = entry.split(' ')
+		class_id = info[1]
+		im_path = os.path.join(opt.source_path, info[3])
+		if class_id not in train_image_dict.keys():
+			train_image_dict[class_id] = []
+		train_image_dict[class_id].append(im_path)
+	for entry in test_data:
+		info = entry.split(' ')
+		class_id = info[1]
+		im_path = os.path.join(opt.source_path, info[3])
+		if class_id not in test_image_dict.keys():
+			test_image_dict[class_id] = []
+		test_image_dict[class_id].append(im_path)
+
+	new_train_dict = {}
+	class_ind_ind = 0
+	for cate in train_image_dict:
+		new_train_dict[class_ind_ind] = train_image_dict[cate]
+		class_ind_ind += 1
+	train_image_dict = new_train_dict
+	new_test_dict = {}
+	class_ind_ind = 0
+	for cate in test_image_dict:
+		new_test_dict[class_ind_ind] = test_image_dict[cate]
+		class_ind_ind += 1
+	test_image_dict = new_test_dict
+	train_dataset = TrainDatasetrsk(train_image_dict, opt)
+	val_dataset = BaseTripletDataset(test_image_dict,   opt, is_validation=True)
+	eval_dataset = BaseTripletDataset(train_image_dict,   opt, is_validation=True)
+	return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
 
 def give_sop_datasets(opt):
 	train_image_dict, test_image_dict = {}, {}

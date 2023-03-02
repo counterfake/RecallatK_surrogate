@@ -18,7 +18,7 @@ from mixup import *
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196', 'cub'])
+parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196', 'cub', 'all_in'])
 parser.add_argument('--lr',                default=0.00001,  type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--fc_lr_mul',         default=0,        type=float, help='OPTIONAL: Multiply the embedding layer learning rate by this value. If set to 0, the embedding layer shares the same learning rate.')
 parser.add_argument('--n_epochs',          default=400,       type=int,   help='Number of training epochs.')
@@ -158,7 +158,7 @@ random.seed(opt.seed)
 np.random.seed(opt.seed)
 torch.manual_seed(opt.seed)
 torch.cuda.manual_seed(opt.seed); torch.cuda.manual_seed_all(opt.seed)
-tensorboard_path = Path(f"logs/logs_{exp_name}") / timestamp
+tensorboard_path = Path(f"../logs/logs_{exp_name}") / timestamp
 
 tensorboard_path.parent.mkdir(exist_ok=True, parents=True)
 global writer;
@@ -265,7 +265,7 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         grad_measure.dump(epoch)
 
 print('\n-----\n')
-if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub']:
+if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub', 'all_in']:
     eval_params = {'dataloader': dataloaders['testing'], 'model': model, 'opt': opt, 'epoch': 0}
 elif opt.dataset == 'vehicle_id':
     eval_params = {
@@ -279,7 +279,7 @@ for epoch in range(opt.n_epochs):
     train_one_epoch(dataloaders['training'], model, optimizer, criterion, opt, epoch)
     dataloaders['training'].dataset.reshuffle()
     _ = model.eval()
-    if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub']:
+    if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub', 'all_in']:
         eval_params = {'dataloader':dataloaders['testing'], 'model':model, 'opt':opt, 'epoch':epoch}
     elif opt.dataset=='vehicle_id':
         eval_params = {'dataloaders':[dataloaders['testing_set1'], dataloaders['testing_set2'], dataloaders['testing_set3']], 'model':model, 'opt':opt, 'epoch':epoch}
