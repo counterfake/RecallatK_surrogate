@@ -10,7 +10,7 @@ certifi==2019.9.11
 cffi==1.12.3
 chardet==3.0.4
 Click==7.0
-cryptography==2.7
+cryptography==41.0.4
 cvxpy==1.1.7
 cycler==0.10.0
 Cython==0.29.13
